@@ -98,7 +98,9 @@ do_pylint() {
 "^tensorflow/contrib/eager/python/evaluator\.py.*\[E0202.*method-hidden "\
 "^tensorflow/contrib/eager/python/metrics_impl\.py.*\[E0202.*method-hidden "\
 "^tensorflow/python/platform/gfile\.py.*\[E0301.*non-iterator "\
-"^tensorflow/python/keras/_impl/keras/callbacks\.py.*\[E1133.*not-an-iterable"
+"^tensorflow/python/keras/_impl/keras/callbacks\.py.*\[E1133.*not-an-iterable "\
+"^tensorflow/python/keras/_impl/keras/layers/recurrent\.py.*\[E0203.*access-member-before-definition "\
+"^tensorflow/python/kernel_tests/constant_op_eager_test.py.*\[E0303.*invalid-length-returned"
 
   echo "ERROR_WHITELIST=\"${ERROR_WHITELIST}\""
 
@@ -109,9 +111,9 @@ do_pylint() {
   fi
 
   if [[ $1 == "PYTHON2" ]]; then
-    PYLINT_BIN="python /usr/local/lib/python2.7/dist-packages/pylint/lint.py"
+    PYLINT_BIN="python -m pylint"
   elif [[ $1 == "PYTHON3" ]]; then
-    PYLINT_BIN="python3 /usr/local/lib/python3.4/dist-packages/pylint/lint.py"
+    PYLINT_BIN="python3 -m pylint"
   else
     echo "Unrecognized python version (PYTHON2 | PYTHON3): $1"
     return 1
@@ -400,9 +402,14 @@ cmd_status(){
 }
 
 # Run bazel build --nobuild to test the validity of the BUILD files
+# TODO(mikecase): Remove TF Lite exclusion from this list. Exclusion is
+# necessary since the @androidsdk WORKSPACE dependency is commented
+# out by default in TF WORKSPACE file.
 do_bazel_nobuild() {
   BUILD_TARGET="//tensorflow/..."
-  BUILD_CMD="bazel build --nobuild ${BAZEL_FLAGS} ${BUILD_TARGET}"
+  BUILD_TARGET="${BUILD_TARGET} -//tensorflow/contrib/lite/java/demo/app/src/main/..."
+  BUILD_TARGET="${BUILD_TARGET} -//tensorflow/contrib/lite/schema/..."
+  BUILD_CMD="bazel build --nobuild ${BAZEL_FLAGS} -- ${BUILD_TARGET}"
 
   ${BUILD_CMD}
 

@@ -77,18 +77,6 @@ xla::ComputationDataHandle XlaComputeGatherDynamicSlice(
                               out_shape.dim_sizes());
   }
 
-  // Degenerate case: single slice.
-  if (num_indices == 1) {
-    auto index = builder->Reshape(indices, {1});
-    auto start_index = builder->Pad(
-        index, XlaHelpers::Zero(builder, index_type),
-        xla::MakeEdgePaddingConfig(
-            {{input_shape_pre_axis.dims(), input_shape_post_axis.dims()}}));
-    auto slice =
-        builder->DynamicSlice(input, start_index, slice_shape.dim_sizes());
-    return builder->Reshape(slice, out_shape.dim_sizes());
-  }
-
   // Specify the shape of the loop-carried Tensor tuple.
   xla::PrimitiveType ptype;
   TF_CHECK_OK(DataTypeToPrimitiveType(dtype, &ptype));
@@ -210,6 +198,7 @@ void GatherOpDynamicSlice::Compile(XlaOpKernelContext* context) {
 }
 
 REGISTER_XLA_OP(Name("Gather"), GatherOpDynamicSlice);
-REGISTER_XLA_OP(Name("GatherV2"), GatherOpDynamicSlice);
+REGISTER_XLA_OP(Name("GatherV2").CompileTimeConstInput("axis"),
+                GatherOpDynamicSlice);
 
 }  // namespace tensorflow

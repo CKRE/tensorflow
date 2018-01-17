@@ -40,7 +40,7 @@ class MNISTModel(tfe.Network):
   """MNIST Network.
 
   Network structure is equivalent to:
-  https://github.com/tensorflow/tensorflow/blob/r1.4/tensorflow/examples/tutorials/mnist/mnist_deep.py
+  https://github.com/tensorflow/tensorflow/blob/r1.5/tensorflow/examples/tutorials/mnist/mnist_deep.py
   and
   https://github.com/tensorflow/models/blob/master/tutorials/image/mnist/convolutional.py
 
@@ -190,10 +190,10 @@ def main(_):
   else:
     train_dir = None
     test_dir = None
-  summary_writer = tf.contrib.summary.create_summary_file_writer(
-      train_dir, flush_secs=10)
-  test_summary_writer = tf.contrib.summary.create_summary_file_writer(
-      test_dir, flush_secs=10, name='test')
+  summary_writer = tf.contrib.summary.create_file_writer(
+      train_dir, flush_millis=10000)
+  test_summary_writer = tf.contrib.summary.create_file_writer(
+      test_dir, flush_millis=10000, name='test')
   checkpoint_prefix = os.path.join(FLAGS.checkpoint_dir, 'ckpt')
 
   with tf.device(device):
